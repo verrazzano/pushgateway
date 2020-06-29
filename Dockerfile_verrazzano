@@ -1,0 +1,37 @@
+FROM oraclelinux:7.8 as build_base
+
+RUN yum update -y \
+    && yum-config-manager --save --setopt=ol7_ociyum_config.skip_if_unavailable=true \
+    && yum install -y oracle-golang-release-el7 \
+    && yum-config-manager --enable ol7_developer_golang113 \
+    && yum-config-manager --add-repo http://yum.oracle.com/repo/OracleLinux/OL7/developer/golang114/x86_64 \
+    && yum install -y git gcc make golang-1.13.4-1.el7.x86_64 \
+    && yum clean all \
+    && go version
+
+# Compile to /usr/bin
+ENV GOBIN=/usr/bin
+
+# Set go path
+ENV GOPATH=/go
+
+# Need to use specific WORKDIR to match alertmanager's source packages
+WORKDIR /root/go/src/github.com/prometheus/pushgateway
+
+COPY . .
+
+ENV GO111MODULE=on
+RUN make common-build common-test
+
+FROM oraclelinux:7-slim
+
+COPY --from=build_base --chown=nobody:nobody /root/go/src/github.com/prometheus/pushgateway/pushgateway /bin/pushgateway
+
+# in OL7, user "nobody" has UID 99; specifying user by UID to faciltiate K8s
+# confirming this is not running as root
+USER       99
+EXPOSE     9091
+ENV        VERRAZZANO_PUSHGATEWAY_IGNORE_TYPES=true
+ENV        VERRAZZANO_PUSHGATEWAY_200_COMPATIBILITY=true
+ENTRYPOINT [ "/bin/pushgateway" ]
+CMD [ "--log.level=warn", "--push.disable-consistency-check" ]

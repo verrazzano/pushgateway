@@ -80,8 +80,8 @@ func main() {
 	*routePrefix = computeRoutePrefix(*routePrefix, *externalURL)
 	externalPathPrefix := computeRoutePrefix("", *externalURL)
 
-	level.Info(logger).Log("msg", "starting pushgateway", "version", version.Info())
-	level.Info(logger).Log("build_context", version.BuildContext())
+	level.Warn(logger).Log("msg", "starting pushgateway", "version", version.Info())
+	level.Warn(logger).Log("build_context", version.BuildContext())
 	level.Debug(logger).Log("msg", "external URL", "url", *externalURL)
 	level.Debug(logger).Log("msg", "path prefix used externally", "path", externalPathPrefix)
 	level.Debug(logger).Log("msg", "path prefix for internal routing", "path", *routePrefix)
