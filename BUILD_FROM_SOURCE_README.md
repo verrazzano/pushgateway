@@ -14,6 +14,6 @@ export DOCKER_TAG=<Image Tag>
 Build and Push Images
 
 ```
-docker build --file Dockerfile_verrazzano --tag ${DOCKER_REPO}/${DOCKER_NAMESPACE}/pushgateway-mirror:${DOCKER_TAG} .
-docker push ${DOCKER_REPO}/${DOCKER_NAMESPACE}/pushgateway-mirror:${DOCKER_TAG}
+docker build --file Dockerfile_verrazzano --tag ${DOCKER_REPO}/${DOCKER_NAMESPACE}/pushgateway:${DOCKER_TAG} .
+docker push ${DOCKER_REPO}/${DOCKER_NAMESPACE}/pushgateway:${DOCKER_TAG}
 ``

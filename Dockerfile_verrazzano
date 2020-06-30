@@ -27,6 +27,9 @@ FROM oraclelinux:7-slim
 
 COPY --from=build_base --chown=nobody:nobody /root/go/src/github.com/prometheus/pushgateway/pushgateway /bin/pushgateway
 
+# Add license files to the image
+COPY LICENSE NOTICE README.md THIRD_PARTY_LICENSES.txt /license/
+
 # in OL7, user "nobody" has UID 99; specifying user by UID to faciltiate K8s
 # confirming this is not running as root
 USER       99
