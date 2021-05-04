@@ -1,7 +1,9 @@
 /pushgateway
+/pushgateway-mirror
 /.build
 /.release
 /.tarballs
+/.idea
 *.test
 *~
 *.exe

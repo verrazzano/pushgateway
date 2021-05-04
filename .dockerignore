@@ -1,4 +1,5 @@
 .build/
+.git/
 .tarballs/
 
 !.build/linux-amd64/

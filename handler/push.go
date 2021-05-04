@@ -11,6 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Copyright (C) 2020, 2021, Oracle and/or its affiliates.
+// Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
 package handler
 
 import (
@@ -19,6 +22,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -34,6 +38,7 @@ import (
 	dto "github.com/prometheus/client_model/go"
 
 	"github.com/prometheus/pushgateway/storage"
+	"github.com/prometheus/pushgateway/verrazzano"
 )
 
 const (
@@ -104,7 +109,11 @@ func Push(
 			// fallback for now will anyway be the text format
 			// version 0.0.4, so just go for it and see if it works.
 			var parser expfmt.TextParser
-			metricFamilies, err = parser.TextToMetricFamilies(r.Body)
+			var readCloser = r.Body
+			if os.Getenv("VERRAZZANO_PUSHGATEWAY_IGNORE_TYPES") == "true" {
+				readCloser = verrazzano.NewTypeDefiningReadCloser(verrazzano.NewTypeFilteringReadCloser(r.Body))
+			}
+			metricFamilies, err = parser.TextToMetricFamilies(readCloser)
 		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -119,7 +128,17 @@ func Push(
 				MetricFamilies: metricFamilies,
 				Replace:        replace,
 			})
-			w.WriteHeader(http.StatusAccepted)
+			// Verrazzano: the old 0.5.x Pushgateway would have returned
+			// 200 here, but this version returns 202 when push-time
+			// checking is disabled. This could break compatibility
+			// with our users, so let's prepare to fix it without a
+			// code change, if necessary. The upstream code was:
+			// w.WriteHeader(http.StatusAccepted)
+			status := http.StatusAccepted
+			if os.Getenv("VERRAZZANO_PUSHGATEWAY_200_COMPATIBILITY") == "true" {
+				status = http.StatusOK
+			}
+			w.WriteHeader(status)
 			return
 		}
 		errCh := make(chan error, 1)

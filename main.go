@@ -11,6 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Copyright (C) 2020, 2021, Oracle and/or its affiliates.
+// Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+
 package main
 
 import (
@@ -82,8 +85,8 @@ func main() {
 	*routePrefix = computeRoutePrefix(*routePrefix, *externalURL)
 	externalPathPrefix := computeRoutePrefix("", *externalURL)
 
-	level.Info(logger).Log("msg", "starting pushgateway", "version", version.Info())
-	level.Info(logger).Log("build_context", version.BuildContext())
+	level.Warn(logger).Log("msg", "starting pushgateway", "version", version.Info())
+	level.Warn(logger).Log("build_context", version.BuildContext())
 	level.Debug(logger).Log("msg", "external URL", "url", *externalURL)
 	level.Debug(logger).Log("msg", "path prefix used externally", "path", externalPathPrefix)
 	level.Debug(logger).Log("msg", "path prefix for internal routing", "path", *routePrefix)
